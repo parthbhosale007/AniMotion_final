@@ -1,0 +1,16 @@
+FBXHeaderExtension:  {
+    FBXHeaderVersion: 1003
+    FBXVersion: 6100
+}
+Objects:  {
+    Model: 1234567890, "Model::RootNode", "Null" {
+        Version: 232
+        Properties70:  {
+        }
+        Shading: T
+        Culling: "CullingOff"
+    }
+}
+Connections:  {
+    Connect: "OO", 1234567890, 0
+}

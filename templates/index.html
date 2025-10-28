@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AniMotion - AI Motion Capture Pipeline</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #2C5F8D;
+            --secondary: #C77D58;
+            --accent: #E8B86D;
+            --dark: #1A1A2E;
+            --light: #F4F1E8;
+            --success: #4A7C59;
+            --gradient: linear-gradient(135deg, #2C5F8D 0%, #4A7C59 100%);
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--light);
+            color: var(--dark);
+            line-height: 1.6;
+        }
+
+        /* Header */
+        header {
+            background: var(--gradient);
+            color: white;
+            padding: 2rem 0;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            text-align: center;
+        }
+
+        .logo {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+        }
+
+        .logo i {
+            color: var(--accent);
+        }
+
+        .tagline {
+            font-size: 1.1rem;
+            opacity: 0.95;
+            font-weight: 300;
+        }
+
+        /* Container */
+        .container {
+            max-width: 1200px;
+            margin: 3rem auto;
+            padding: 0 2rem;
+        }
+
+        /* Module Cards */
+        .modules-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .module-card {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 8px 24px rgba(44, 95, 141, 0.15);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .module-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 32px rgba(44, 95, 141, 0.25);
+            border-color: var(--accent);
+        }
+
+        .module-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--light);
+        }
+
+        .module-icon {
+            background: var(--gradient);
+            color: white;
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+        }
+
+        .module-title {
+            font-size: 1.5rem;
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .module-description {
+            color: #666;
+            margin-bottom: 1.5rem;
+            font-size: 0.95rem;
+        }
+
+        /* Upload Area */
+        .upload-area {
+            border: 3px dashed var(--secondary);
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: linear-gradient(135deg, rgba(232, 184, 109, 0.05) 0%, rgba(199, 125, 88, 0.05) 100%);
+            margin-bottom: 1rem;
+        }
+
+        .upload-area:hover {
+            background: linear-gradient(135deg, rgba(232, 184, 109, 0.15) 0%, rgba(199, 125, 88, 0.15) 100%);
+            border-color: var(--accent);
+        }
+
+        .upload-area.dragover {
+            background: rgba(232, 184, 109, 0.25);
+            border-color: var(--accent);
+            transform: scale(1.02);
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            color: var(--secondary);
+            margin-bottom: 1rem;
+        }
+
+        .upload-text {
+            font-size: 1.1rem;
+            color: var(--dark);
+            margin-bottom: 0.5rem;
+        }
+
+        .upload-hint {
+            font-size: 0.9rem;
+            color: #888;
+        }
+
+        /* Buttons */
+        .btn {
+            background: var(--gradient);
+            color: white;
+            border: none;
+            padding: 0.8rem 2rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 500;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(44, 95, 141, 0.3);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: var(--secondary);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        /* Webcam Section */
+        .webcam-section {
+            margin-top: 1.5rem;
+            padding: 1.5rem;
+            background: linear-gradient(135deg, rgba(44, 95, 141, 0.05) 0%, rgba(74, 124, 89, 0.05) 100%);
+            border-radius: 12px;
+        }
+
+        .webcam-container {
+            position: relative;
+            background: #000;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 1rem;
+            display: none;
+        }
+
+        .webcam-container.active {
+            display: block;
+        }
+
+        #webcam {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .recording-indicator {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: rgba(255, 0, 0, 0.8);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            display: none;
+            align-items: center;
+            gap: 0.5rem;
+            animation: pulse 1.5s infinite;
+        }
+
+        .recording-indicator.active {
+            display: flex;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            margin-top: 1rem;
+            display: none;
+        }
+
+        .progress-container.active {
+            display: block;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--light);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--gradient);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .progress-text {
+            text-align: center;
+            margin-top: 0.5rem;
+            color: var(--primary);
+            font-weight: 500;
+        }
+
+        /* File Preview */
+        .file-preview {
+            background: var(--light);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+            display: none;
+        }
+
+        .file-preview.active {
+            display: block;
+        }
+
+        .file-info {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .file-name {
+            font-weight: 500;
+            color: var(--primary);
+        }
+
+        /* Output Section */
+        .output-section {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background: linear-gradient(135deg, rgba(74, 124, 89, 0.1) 0%, rgba(44, 95, 141, 0.1) 100%);
+            border-radius: 12px;
+            display: none;
+        }
+
+        .output-section.active {
+            display: block;
+        }
+
+        .output-files {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .output-file {
+            background: white;
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+            transition: transform 0.3s ease;
+            cursor: pointer;
+        }
+
+        .output-file:hover {
+            transform: translateY(-3px);
+        }
+
+        .output-file i {
+            font-size: 2rem;
+            color: var(--secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .output-file-name {
+            font-weight: 500;
+            color: var(--dark);
+            margin-bottom: 0.5rem;
+        }
+
+        /* Alerts */
+        .alert {
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            display: none;
+        }
+
+        .alert.active {
+            display: block;
+        }
+
+        .alert-success {
+            background: rgba(74, 124, 89, 0.1);
+            color: var(--success);
+            border-left: 4px solid var(--success);
+        }
+
+        .alert-error {
+            background: rgba(220, 53, 69, 0.1);
+            color: #dc3545;
+            border-left: 4px solid #dc3545;
+        }
+
+        /* Footer */
+        footer {
+            background: var(--dark);
+            color: white;
+            text-align: center;
+            padding: 2rem;
+            margin-top: 4rem;
+        }
+
+        footer a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .modules-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .logo {
+                font-size: 2rem;
+            }
+
+            .btn-group {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <div class="logo">
+                <i class="fas fa-magic"></i>
+                AniMotion
+            </div>
+            <p class="tagline">AI-Powered Motion Capture to Character Animation Pipeline</p>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="modules-grid">
+            <!-- Module 1: Pose Extraction -->
+            <div class="module-card">
+                <div class="module-header">
+                    <div class="module-icon">
+                        <i class="fas fa-video"></i>
+                    </div>
+                    <div>
+                        <h2 class="module-title">Module 1: Pose Extraction</h2>
+                    </div>
+                </div>
+                <p class="module-description">
+                    Extract human pose data from video using MediaPipe and OpenCV. Upload a video or capture live from webcam.
+                </p>
+
+                <div class="alert alert-success" id="module1-success">
+                    <i class="fas fa-check-circle"></i> <span id="module1-success-msg"></span>
+                </div>
+                <div class="alert alert-error" id="module1-error">
+                    <i class="fas fa-exclamation-circle"></i> <span id="module1-error-msg"></span>
+                </div>
+
+                <!-- Upload Area -->
+                <div class="upload-area" id="upload-area-1" onclick="document.getElementById('video-upload').click()">
+                    <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                    <p class="upload-text">Upload Video File</p>
+                    <p class="upload-hint">MP4, AVI, MOV supported (Max 500MB)</p>
+                    <input type="file" id="video-upload" accept="video/*" style="display: none;">
+                </div>
+
+                <div class="file-preview" id="file-preview-1">
+                    <div class="file-info">
+                        <span class="file-name" id="file-name-1"></span>
+                        <button class="btn" onclick="clearFile(1)"><i class="fas fa-times"></i></button>
+                    </div>
+                </div>
+
+                <!-- Webcam Section -->
+                <div class="webcam-section">
+                    <h3 style="margin-bottom: 1rem; color: var(--primary);">
+                        <i class="fas fa-camera"></i> Or Capture from Webcam
+                    </h3>
+                    <div class="webcam-container" id="webcam-container">
+                        <video id="webcam" autoplay playsinline></video>
+                        <div class="recording-indicator" id="recording-indicator">
+                            <i class="fas fa-circle"></i> Recording
+                        </div>
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn" id="start-webcam" onclick="startWebcam()">
+                            <i class="fas fa-camera"></i> Start Webcam
+                        </button>
+                        <button class="btn btn-secondary" id="record-btn" onclick="toggleRecording()" disabled>
+                            <i class="fas fa-record-vinyl"></i> Start Recording
+                        </button>
+                        <button class="btn" id="stop-webcam" onclick="stopWebcam()" disabled>
+                            <i class="fas fa-stop"></i> Stop Webcam
+                        </button>
+                    </div>
+                </div>
+
+                <div class="progress-container" id="progress-1">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progress-fill-1"></div>
+                    </div>
+                    <p class="progress-text" id="progress-text-1">Processing...</p>
+                </div>
+
+                <button class="btn" id="extract-btn" onclick="extractPose()" style="width: 100%; margin-top: 1rem;" disabled>
+                    <i class="fas fa-cog"></i> Extract Pose Data
+                </button>
+
+                <div class="output-section" id="output-1">
+                    <h3 style="color: var(--success); margin-bottom: 1rem;">
+                        <i class="fas fa-check-circle"></i> Extraction Complete
+                    </h3>
+                    <div class="output-files">
+                        <div class="output-file" onclick="downloadFile('pose_data.json')">
+                            <i class="fas fa-file-code"></i>
+                            <p class="output-file-name">pose_data.json</p>
+                            <small>Download JSON</small>
+                        </div>
+                        <div class="output-file" onclick="downloadFile('pose_skeleton.fbx')">
+                            <i class="fas fa-cube"></i>
+                            <p class="output-file-name">pose_skeleton.fbx</p>
+                            <small>Download FBX</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Module 2: Character Animation -->
+            <div class="module-card">
+                <div class="module-header">
+                    <div class="module-icon">
+                        <i class="fas fa-running"></i>
+                    </div>
+                    <div>
+                        <h2 class="module-title">Module 2: Character Animation</h2>
+                    </div>
+                </div>
+                <p class="module-description">
+                    Apply extracted pose data to your Mixamo T-pose character to create fully animated FBX files.
+                </p>
+
+                <div class="alert alert-success" id="module2-success">
+                    <i class="fas fa-check-circle"></i> <span id="module2-success-msg"></span>
+                </div>
+                <div class="alert alert-error" id="module2-error">
+                    <i class="fas fa-exclamation-circle"></i> <span id="module2-error-msg"></span>
+                </div>
+
+                <!-- Pose JSON Upload -->
+                <div class="upload-area" id="upload-area-2" onclick="document.getElementById('json-upload').click()">
+                    <i class="fas fa-file-code upload-icon"></i>
+                    <p class="upload-text">Upload Pose JSON</p>
+                    <p class="upload-hint">From Module 1 output</p>
+                    <input type="file" id="json-upload" accept=".json" style="display: none;">
+                </div>
+
+                <div class="file-preview" id="file-preview-2">
+                    <div class="file-info">
+                        <span class="file-name" id="file-name-2"></span>
+                        <button class="btn" onclick="clearFile(2)"><i class="fas fa-times"></i></button>
+                    </div>
+                </div>
+
+                <!-- Character FBX Upload -->
+                <div class="upload-area" id="upload-area-3" onclick="document.getElementById('fbx-upload').click()" style="margin-top: 1rem;">
+                    <i class="fas fa-user upload-icon"></i>
+                    <p class="upload-text">Upload Mixamo Character (T-Pose)</p>
+                    <p class="upload-hint">FBX format required</p>
+                    <input type="file" id="fbx-upload" accept=".fbx" style="display: none;">
+                </div>
+
+                <div class="file-preview" id="file-preview-3">
+                    <div class="file-info">
+                        <span class="file-name" id="file-name-3"></span>
+                        <button class="btn" onclick="clearFile(3)"><i class="fas fa-times"></i></button>
+                    </div>
+                </div>
+
+                <div class="progress-container" id="progress-2">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progress-fill-2"></div>
+                    </div>
+                    <p class="progress-text" id="progress-text-2">Animating character...</p>
+                </div>
+
+                <button class="btn" id="animate-btn" onclick="animateCharacter()" style="width: 100%; margin-top: 1rem;" disabled>
+                    <i class="fas fa-magic"></i> Generate Animated Character
+                </button>
+
+                <div class="output-section" id="output-2">
+                    <h3 style="color: var(--success); margin-bottom: 1rem;">
+                        <i class="fas fa-check-circle"></i> Animation Complete
+                    </h3>
+                    <div class="output-files">
+                        <div class="output-file" onclick="downloadFile('skinned_animation.fbx')">
+                            <i class="fas fa-cube"></i>
+                            <p class="output-file-name">animated_character.fbx</p>
+                            <small>Download Animated FBX</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 AniMotion - AI Motion Capture Pipeline</p>
+        <p><a href="https://github.com/parthbhosale007/AniMotion.git" target="_blank"><i class="fab fa-github"></i> View on GitHub</a></p>
+    </footer>
+
+    <script>
+        let mediaRecorder;
+        let recordedChunks = [];
+        let stream;
+
+        // File upload handlers
+        document.getElementById('video-upload').addEventListener('change', function(e) {
+            handleFileSelect(e.target.files[0], 1, 'video');
+        });
+
+        document.getElementById('json-upload').addEventListener('change', function(e) {
+            handleFileSelect(e.target.files[0], 2, 'json');
+        });
+
+        document.getElementById('fbx-upload').addEventListener('change', function(e) {
+            handleFileSelect(e.target.files[0], 3, 'fbx');
+        });
+
+        // Drag and drop
+        ['upload-area-1', 'upload-area-2', 'upload-area-3'].forEach(id => {
+            const area = document.getElementById(id);
+            area.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                area.classList.add('dragover');
+            });
+            area.addEventListener('dragleave', () => {
+                area.classList.remove('dragover');
+            });
+            area.addEventListener('drop', (e) => {
+                e.preventDefault();
+                area.classList.remove('dragover');
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    const type = id === 'upload-area-1' ? 'video' : id === 'upload-area-2' ? 'json' : 'fbx';
+                    const num = id === 'upload-area-1' ? 1 : id === 'upload-area-2' ? 2 : 3;
+                    handleFileSelect(files[0], num, type);
+                }
+            });
+        });
+
+        function handleFileSelect(file, num, type) {
+            if (!file) return;
+            
+            document.getElementById(`file-name-${num}`).textContent = file.name;
+            document.getElementById(`file-preview-${num}`).classList.add('active');
+            
+            if (num === 1) {
+                document.getElementById('extract-btn').disabled = false;
+            } else if (num === 2 || num === 3) {
+                checkModule2Ready();
+            }
+        }
+
+        function clearFile(num) {
+            document.getElementById(`file-preview-${num}`).classList.remove('active');
+            if (num === 1) {
+                document.getElementById('video-upload').value = '';
+                document.getElementById('extract-btn').disabled = true;
+            } else if (num === 2) {
+                document.getElementById('json-upload').value = '';
+                checkModule2Ready();
+            } else if (num === 3) {
+                document.getElementById('fbx-upload').value = '';
+                checkModule2Ready();
+            }
+        }
+
+        function checkModule2Ready() {
+            const jsonFile = document.getElementById('json-upload').files[0];
+            const fbxFile = document.getElementById('fbx-upload').files[0];
+            document.getElementById('animate-btn').disabled = !(jsonFile && fbxFile);
+        }
+
+        // Webcam functions
+        async function startWebcam() {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+                document.getElementById('webcam').srcObject = stream;
+                document.getElementById('webcam-container').classList.add('active');
+                document.getElementById('start-webcam').disabled = true;
+                document.getElementById('record-btn').disabled = false;
+                document.getElementById('stop-webcam').disabled = false;
+            } catch (err) {
+                showAlert(1, 'error', 'Could not access webcam: ' + err.message);
+            }
+        }
+
+        function stopWebcam() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                document.getElementById('webcam').srcObject = null;
+                document.getElementById('webcam-container').classList.remove('active');
+                document.getElementById('start-webcam').disabled = false;
+                document.getElementById('record-btn').disabled = true;
+                document.getElementById('stop-webcam').disabled = true;
+                
+                if (mediaRecorder && mediaRecorder.state === 'recording') {
+                    mediaRecorder.stop();
+                }
+            }
+        }
+
+        function toggleRecording() {
+            const recordBtn = document.getElementById('record-btn');
+            const indicator = document.getElementById('recording-indicator');
+            
+            if (!mediaRecorder || mediaRecorder.state === 'inactive') {
+                // Start recording
+                recordedChunks = [];
+                mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
+                
+                mediaRecorder.ondataavailable = (e) => {
+                    if (e.data.size > 0) {
+                        recordedChunks.push(e.data);
+                    }
+                };
+                
+                mediaRecorder.onstop = async () => {
+                    const blob = new Blob(recordedChunks, { type: 'video/webm' });
+                    await uploadWebcamVideo(blob);
+                    recordedChunks = [];
+                };
+                
+                mediaRecorder.start();
+                recordBtn.innerHTML = '<i class="fas fa-stop"></i> Stop Recording';
+                recordBtn.classList.add('btn-secondary');
+                indicator.classList.add('active');
+            } else {
+                // Stop recording
+                mediaRecorder.stop();
+                recordBtn.innerHTML = '<i class="fas fa-record-vinyl"></i> Start Recording';
+                recordBtn.classList.remove('btn-secondary');
+                indicator.classList.remove('active');
+            }
+        }
+
+        async function uploadWebcamVideo(blob) {
+            const formData = new FormData();
+            formData.append('video', blob, 'webcam_capture.mp4');
+            
+            try {
+                showProgress(1, true);
+                const response = await fetch('/webcam-capture', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showAlert(1, 'success', 'Webcam video captured successfully!');
+                    document.getElementById('file-name-1').textContent = result.filename;
+                    document.getElementById('file-preview-1').classList.add('active');
+                    document.getElementById('extract-btn').disabled = false;
+                } else {
+                    showAlert(1, 'error', result.error || 'Failed to save webcam video');
+                }
+            } catch (error) {
+                showAlert(1, 'error', 'Error uploading webcam video: ' + error.message);
+            } finally {
+                showProgress(1, false);
+            }
+        }
+
+        // Module 1: Extract Pose
+        async function extractPose() {
+            const videoFile = document.getElementById('video-upload').files[0];
+            
+            if (!videoFile && !document.getElementById('file-name-1').textContent) {
+                showAlert(1, 'error', 'Please upload a video or capture from webcam first');
+                return;
+            }
+            
+            const formData = new FormData();
+            if (videoFile) {
+                formData.append('video', videoFile);
+            } else {
+                // Use webcam captured video
+                showAlert(1, 'error', 'Please re-upload the webcam video file');
+                return;
+            }
+            
+            try {
+                showProgress(1, true);
+                document.getElementById('extract-btn').disabled = true;
+                
+                const response = await fetch('/extract-pose', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showAlert(1, 'success', result.message);
+                    document.getElementById('output-1').classList.add('active');
+                    
+                    // Simulate progress
+                    let progress = 0;
+                    const interval = setInterval(() => {
+                        progress += 10;
+                        document.getElementById('progress-fill-1').style.width = progress + '%';
+                        if (progress >= 100) {
+                            clearInterval(interval);
+                            setTimeout(() => showProgress(1, false), 500);
+                        }
+                    }, 200);
+                } else {
+                    showAlert(1, 'error', result.error || 'Failed to extract pose data');
+                    document.getElementById('extract-btn').disabled = false;
+                }
+            } catch (error) {
+                showAlert(1, 'error', 'Error: ' + error.message);
+                document.getElementById('extract-btn').disabled = false;
+                showProgress(1, false);
+            }
+        }
+
+        // Module 2: Animate Character
+        async function animateCharacter() {
+            const jsonFile = document.getElementById('json-upload').files[0];
+            const fbxFile = document.getElementById('fbx-upload').files[0];
+            
+            if (!jsonFile || !fbxFile) {
+                showAlert(2, 'error', 'Please upload both pose JSON and character FBX files');
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('pose_json', jsonFile);
+            formData.append('character_fbx', fbxFile);
+            
+            try {
+                showProgress(2, true);
+                document.getElementById('animate-btn').disabled = true;
+                
+                const response = await fetch('/animate-character', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showAlert(2, 'success', result.message);
+                    document.getElementById('output-2').classList.add('active');
+                    
+                    // Simulate progress
+                    let progress = 0;
+                    const interval = setInterval(() => {
+                        progress += 10;
+                        document.getElementById('progress-fill-2').style.width = progress + '%';
+                        if (progress >= 100) {
+                            clearInterval(interval);
+                            setTimeout(() => showProgress(2, false), 500);
+                        }
+                    }, 200);
+                } else {
+                    showAlert(2, 'error', result.error || 'Failed to animate character');
+                    document.getElementById('animate-btn').disabled = false;
+                }
+            } catch (error) {
+                showAlert(2, 'error', 'Error: ' + error.message);
+                document.getElementById('animate-btn').disabled = false;
+                showProgress(2, false);
+            }
+        }
+
+        // Helper functions
+        function showAlert(module, type, message) {
+            const alertId = `module${module}-${type}`;
+            const msgId = `module${module}-${type}-msg`;
+            
+            document.getElementById(msgId).textContent = message;
+            document.getElementById(alertId).classList.add('active');
+            
+            setTimeout(() => {
+                document.getElementById(alertId).classList.remove('active');
+            }, 5000);
+        }
+
+        function showProgress(module, show) {
+            const progressContainer = document.getElementById(`progress-${module}`);
+            if (show) {
+                progressContainer.classList.add('active');
+                document.getElementById(`progress-fill-${module}`).style.width = '0%';
+            } else {
+                progressContainer.classList.remove('active');
+            }
+        }
+
+        // Function to handle downloads
+        function downloadFile(filename, fileType) {
+            // Create a hidden link and trigger download
+            const link = document.createElement('a');
+            link.href = `/download/${filename}`;
+            link.download = filename;
+            link.style.display = 'none';
+            
+            // Add to document, click, and remove
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+        
+        // Example usage in your success callback
+        fetch('/animate-character', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Show download buttons
+                const fbxBtn = document.getElementById('download-fbx-btn');
+                const mp4Btn = document.getElementById('download-mp4-btn');
+                
+                fbxBtn.onclick = () => downloadFile(data.animated_fbx, 'FBX');
+                fbxBtn.style.display = 'block';
+                
+                if (data.animated_mp4) {
+                    mp4Btn.onclick = () => downloadFile(data.animated_mp4, 'MP4');
+                    mp4Btn.style.display = 'block';
+                }
+                
+                // Also provide direct links as backup
+                document.getElementById('direct-fbx-link').href = `/download/${data.animated_fbx}`;
+                document.getElementById('direct-fbx-link').style.display = 'block';
+            }
+        });
+        function submitPoseForm() {
+            const form = document.getElementById('pose-form');
+            const formData = new FormData(form);
+            
+            fetch('/extract-pose', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('✅ ' + data.message);
+                } else {
+                    alert('❌ Error: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('❌ Request failed: ' + error);
+            });
+        }
+
+        function submitAnimationForm() {
+            const form = document.getElementById('animation-form');
+            const formData = new FormData(form);
+            
+            fetch('/animate-character', {
+                method: 'POST', 
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    console.log('Animation successful:', data);
+                    
+                    const actualFbxFilename = data.animated_character;
+                    
+                    // Update download button
+                    document.getElementById('download-fbx-btn').onclick = function() {
+                        window.open(`/download/${actualFbxFilename}`, '_blank');
+                    };
+                    
+                    // Update direct link
+                    const directLink = document.getElementById('direct-fbx-link');
+                    directLink.href = `/download/${actualFbxFilename}`;
+                    directLink.textContent = `Download ${actualFbxFilename}`;
+                    directLink.style.display = 'inline-block';
+                    
+                    // Show download section
+                    document.getElementById('download-section').style.display = 'block';
+                    
+                    alert(`✅ ${data.message}\nFile: ${actualFbxFilename}`);
+                } else {
+                    alert('❌ Error: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('❌ Request failed: ' + error);
+            });
+        }
+     </script>
+</body>
+</html>
